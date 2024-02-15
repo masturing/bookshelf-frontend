@@ -84,7 +84,6 @@ function deleteBook(id) {
     let books = JSON.parse(localStorage.getItem('books'));
     books = books.filter(book => book.id !== id);
     localStorage.setItem('books', JSON.stringify(books));
-    listbook.innerHTML = getAllBook().map(createCardBook).join("");
     window.location.href = "index.html";
 }
 
