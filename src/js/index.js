@@ -7,13 +7,13 @@ function uuidv4() {
     });
 }
 
-function createBook(name, author, year, isCompleted) {
+function createBook(title, author, year, isComplete) {
     const book = {
         id: uuidv4(),
-        name: name,
+        title: title,
         author: author,
-        year: year,
-        isCompleted: isCompleted
+        year: parseInt(year),
+        isComplete: isComplete
     };
     return book;
 }
@@ -25,9 +25,9 @@ function createCardBook(book) {
   >
   <div class="flex flex-row">
     <span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">${book.year}</span>
-    ${book.isCompleted ? `<span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Finished</span>` : `<span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Unfinished</span>`}
+    ${book.isComplete ? `<span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Finished</span>` : `<span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Unfinished</span>`}
   </div>
-  <h2 class="mt-3 text-xl font-semibold dark:text-white text-gray-800">${book.name}</h2>
+  <h2 class="mt-3 text-xl font-semibold dark:text-white text-gray-800">${book.title}</h2>
   <p class="mt-3 dark:text-white text-gray-800">Author: ${book.author}</p>
   <div class="flex flex-row mt-3">
     <button onclick="confirmDelete('${book.id}')"; data-modal-target="popup-modal" data-modal-toggle="popup-modal" type="button" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 inline-flex items-center py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
@@ -64,11 +64,11 @@ function getAllBook() {
 
 function saveBook() {
     const insertForm = document.forms["insert-form"];
-    const name = insertForm["name"].value;
+    const title = insertForm["title"].value;
     const author = insertForm["author"].value;
     const year = insertForm["year"].value;
-    const isCompleted = insertForm["is-completed"].checked;
-    const book = createBook(name, author, year, isCompleted);
+    const isComplete = insertForm["is-complete"].checked;
+    const book = createBook(title, author, year, isComplete);
 
     let books = [];
     if (localStorage.getItem('books') !== null) {
@@ -104,20 +104,19 @@ function updateBook(id, book) {
 
 function confirmUpdate(id) {
     const updateForm = document.forms["update-form"];
-    const isCompleted = updateForm["is-completed"].checked;
     const confirmButton = document.getElementById("update-btn");
     const bookDetail = JSON.parse(localStorage.getItem('books')).find(book => book.id === id);
-    updateForm["name"].value = bookDetail.name;
+    updateForm["title"].value = bookDetail.title;
     updateForm["author"].value = bookDetail.author;
     updateForm["year"].value = bookDetail.year;
-    updateForm["is-completed"].checked = bookDetail.isCompleted;
+    updateForm["is-complete"].checked = bookDetail.isComplete;
 
     confirmButton.addEventListener("click", function () {
-        const name = updateForm["name"].value;
+        const title = updateForm["title"].value;
         const author = updateForm["author"].value;
         const year = updateForm["year"].value;
-        const isCompleted = updateForm["is-completed"].checked;
-        const book = createBook(name, author, year, isCompleted);
+        const isComplete = updateForm["is-complete"].checked;
+        const book = createBook(title, author, year, isComplete);
         updateBook(id, book);
         listbook.innerHTML = getAllBook().map(createCardBook).join("");
     });
@@ -126,11 +125,23 @@ function confirmUpdate(id) {
 function initPage() {
     const bookData = getAllBook();
     const queryKeyword = new URLSearchParams(window.location.search).get('keyword');
+    const queryIsComplete = new URLSearchParams(window.location.search).get('isComplete');
     if (queryKeyword) {
-        listbook.innerHTML = bookData.filter(book => book.name.toLowerCase().includes(queryKeyword.toLowerCase())).map(createCardBook).join("");
+        listbook.innerHTML = bookData.filter(book => book.title.toLowerCase().includes(queryKeyword.toLowerCase())).map(createCardBook).join("");
     } else {
         listbook.innerHTML = bookData.map(createCardBook).join("");
     };
+    if (queryIsComplete != null) {
+        const isComplete = queryIsComplete === "true";
+        const rakDropDown = document.getElementById("dropdownDefaultButton");
+        rakDropDown.innerHTML = isComplete ? `Finished Reading<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+        </svg>` : `Unfinished Reading<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+        </svg>`;
+        listbook.innerHTML = bookData.filter(book => book.isComplete === isComplete).map(createCardBook).join("");
+    }
+
 
 }
 
